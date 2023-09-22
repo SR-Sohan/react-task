@@ -1,85 +1,57 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AllContact from "../components/AllContact";
 
 const Problem2 = () => {
-  const [contacts, setContacts] = useState({});
-  const [nextPageUrl, setNextPageUrl] = useState(null);
-  const [loading,setLoading]  = useState(false)
+  const [contacts, setContacts] = useState([]);
+  const [nextPageUrl, setNextPageUrl] = useState("");
+  const modalRef = useRef(null);
 
-  const handleContact = () => {
-    fetch("https://contact.mediusware.com/api/contacts/?format=json")
+  const fetchData = async (link, reset) => {
+    fetch(link)
       .then((res) => res.json())
       .then((data) => {
-        setContacts(data)
-        setNextPageUrl(data.next)
-      });
-  };
-  const handleUSContact = () => {
-    fetch(
-      "https://contact.mediusware.com/api/country-contacts/United%20States/?format=json"
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setContacts(data)
-        setNextPageUrl(data.next)
+        setNextPageUrl(data.next);
+        if (reset) {
+          setContacts([...data.results]);
+        } else {
+          setContacts((prev) => [...prev, ...data.results]);
+        }
       });
   };
 
-//   const fetchContacts = (url) => {
-//     setLoading(true);
-
-//     fetch(url)
-//       .then((res) => res.json())
-//       .then((data) => {
-//         setContacts(data);
-//         setNextPageUrl(data.next);
-//         setLoading(false);
-//       })
-//       .catch((error) => {
-//         console.error('Error fetching contacts:', error);
-//         setLoading(false);
-//       });
-//   };
-//   const handleModalScroll = () => {
-//     const modalElement = document.getElementById("exampleModal");
-
-//     if (modalElement) {
-//       const modalContent = modalElement.querySelector(".modal-content");
-//       const scrollTop = modalContent.scrollTop;
-//       const scrollHeight = modalContent.scrollHeight;
-//       const clientHeight = modalContent.clientHeight;
-
-
-//       const threshold = 100;
-
-//       if (scrollHeight - scrollTop - clientHeight < threshold) {
-
-//         if (nextPageUrl) {
-//           fetchContacts(nextPageUrl);
-//         }
-//       }
-//     }
-//   };
-
-//   useEffect(() => {
-//     // Add a scroll event listener for the modal
-//     const modalElement = document.getElementById("exampleModal");
-
-//     if (modalElement) {
-//       modalElement.addEventListener("scroll", handleModalScroll);
-//     }
-
-//     // Fetch the initial page of contacts when the component mounts
-//     fetchContacts("https://contact.mediusware.com/api/contacts/?format=json&page=1");
-
-//     // Clean up the event listener when the component unmounts
-//     return () => {
-//       if (modalElement) {
-//         modalElement.removeEventListener("scroll", handleModalScroll);
-//       }
-//     };
-//   }, [nextPageUrl]);
-
+  const handleContact = async () => {
+    await fetchData(
+      "https://contact.mediusware.com/api/contacts/?format=json",
+      true
+    );
+  };
+  const handleUSContact = async () => {
+    await fetchData(
+      "https://contact.mediusware.com/api/country-contacts/United%20States/?format=json",
+      true
+    );
+  };
+  const handleScroll = async () => {
+    try {
+      const modal = modalRef.current;
+      if (modal) {
+        const scrollPosition = modal.scrollTop + modal.clientHeight;
+        const totalHeight = modal.scrollHeight;
+        if (scrollPosition >= totalHeight) {
+          await fetchData(nextPageUrl, false);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    const modal = modalRef.current;
+    modal.addEventListener("scroll", handleScroll);
+    return () => {
+      modal.removeEventListener("scroll", handleScroll);
+    };
+  }, [contacts]);
 
   return (
     <div className="container">
@@ -95,11 +67,7 @@ const Problem2 = () => {
           >
             All Contacts
           </button>
-          <AllContact
-            handleContact={handleContact}
-            handleUSContact={handleUSContact}
-            contacts={contacts}
-          />
+
           <button
             onClick={handleUSContact}
             data-bs-toggle="modal"
@@ -109,6 +77,12 @@ const Problem2 = () => {
           >
             US Contacts
           </button>
+          <AllContact
+            handleContact={handleContact}
+            handleUSContact={handleUSContact}
+            contacts={contacts}
+            modalRef={modalRef}
+          />
         </div>
       </div>
     </div>

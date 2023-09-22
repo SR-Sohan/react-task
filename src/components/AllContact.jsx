@@ -1,11 +1,11 @@
-const AllContact = ({contacts,handleContact,handleUSContact}) => {
+const AllContact = ({contacts,handleContact,handleUSContact,modalRef}) => {
 
    let contactItems = null;
-   if (contacts && contacts.results) {
-     contactItems = contacts.results.map((item) => (
+   if (contacts) {
+     contactItems = contacts.map((item) => (
       <div className="col-lg-6" key={item.id}> {/* Don't forget to add a unique key */}
         <div className="single-item bg-success p-2 rounded text-center">
-          <h3>{item.country.name}</h3>
+          <h3>{item.country ? item.country.name : 'Unknown'}</h3>
           <p>Phone: {item.phone}</p> {/* You can access item properties here */}
         </div>
       </div>
@@ -13,6 +13,7 @@ const AllContact = ({contacts,handleContact,handleUSContact}) => {
    }
   return (
     <div
+    ref={modalRef}
       className="modal fade"
       id="exampleModal"
       
@@ -25,20 +26,7 @@ const AllContact = ({contacts,handleContact,handleUSContact}) => {
             <h1 className="modal-title fs-5" id="exampleModalLabel">
             All Contacts
             </h1>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div className="modal-body">
-            <div className="row g-2">
-            {contactItems}
-            </div>
-          </div>
-          <div className="modal-footer">
-            
+           
             <button
             style={{backgroundColor: "#46139f"}}
               type="button"
@@ -63,6 +51,14 @@ const AllContact = ({contacts,handleContact,handleUSContact}) => {
             >
               Close
             </button>
+          </div>
+          <div className="modal-body">
+            <div className="row g-2">
+            {contactItems}
+            </div>
+          </div>
+          <div className="modal-footer">
+            
           </div>
         </div>
       </div>
