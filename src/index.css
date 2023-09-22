@@ -1,0 +1,12 @@
+a{
+  text-decoration: none;
+}
+ul{
+  list-style: none;
+}
+.active{
+  color: #1b1a1a !important;
+}
+body{
+  background-color: #efefef;
+}
